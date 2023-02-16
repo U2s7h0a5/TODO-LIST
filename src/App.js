@@ -56,7 +56,7 @@ const Home = () => {
       setListData(data.filter((x) => x.status === status));
       console.log(status);
     } else {
-      setListData(data);
+      // setListData(data);
     }
   };
 
