@@ -4,59 +4,57 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const getLocalItems = () =>{
-  let list = localStorage.getItem('listData'); 
-
-  if(list){
-    return JSON.parse(localStorage.getItem('listData'));
-  }else{
-return [];
-  }
-}
 
 const Home = () => {
   const [activity, setActivity] = useState("");
-  const [listData, setListData] = useState(getLocalItems());
+  const [listData, setListData] = useState([]);
   const [status, setStatus] = useState("Incomplete");
   const [selectedId, setSelectedId] = useState(0);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState();
 
   const addActivity = () => {
     if (activity) {
       setData([
         ...data,
-        { activity: activity, status: status, id: data.length  },
+        { activity: activity, status: status, id: data.length + 1 },
       ]);
       setListData([
         ...listData,
-        { activity: activity, status: status, id: data.length + 1 },
+        { activity: activity, status: status, id: listData.length + 1},
       ]);
       toast("ITEM added successfully!");
       setActivity("");
       setStatus("Incomplete");
     } else {
-      window.alert("Please Enter TODO")
+      window.alert("Please Enter TODO Title")
     }
+    window.localStorage.setItem('data', JSON.stringify(([
+      ...data,
+      { activity: activity, status: status, id: data.length + 1 },
+    ])));
   };
 
   const deleteItem = (e) => {
-    const filterData = data.filter((data) => data.id !== Number(e.target.id));
+    const filterData = listData.filter((data) => data.id !== Number(e.target.id));
     setListData(filterData);
     setData(filterData);
     toast("ITEM Deleted successfully!");
+    window.localStorage.setItem('data', JSON.stringify(filterData));
   };
+
   const editItem = (e) => {
     const item = data.filter((d) => d.id === Number(e.target.id));
     setActivity(item[0].activity);
     setStatus(item[0].status);
-    setSelectedId(Number(e.target.id));
+    setSelectedId(Number(e.target.id));    
   };
+
   const filterStatus = (status) => {
     if (status !== "All") {
       setListData(data.filter((x) => x.status === status));
       console.log(status);
     } else {
-      // setListData(data);
+      setListData(data);
     }
   };
 
@@ -67,6 +65,7 @@ const Home = () => {
         item.status = status;
       }
     });
+    window.localStorage.setItem('data', JSON.stringify(data))
     setData(data);
     setListData(data);
     setSelectedId(0);
@@ -76,9 +75,10 @@ const Home = () => {
   };
 
   useEffect(() => {
-    localStorage.setItem('listData', JSON.stringify(listData))
-    console.log('hi')
-  }, [listData]);
+    const data =  JSON.parse(localStorage.getItem('data')) || []
+    setListData(data);
+    setData(data);
+  }, []);
 
   return (
     <>
@@ -113,7 +113,7 @@ const Home = () => {
       </div>
 
       <div className="body-part">
-        {listData.length === 0 ? <p> no records </p> : ""}
+        {listData.length === 0 ? <p className="no-records"> no records </p> : ""}
         {listData !== [] &&
           listData.map((item, i) => {
             return (
@@ -162,7 +162,7 @@ const Home = () => {
               {selectedId === 0 && <h5 className="modal-title">ADD TODO</h5>}
             </div>
             <div className="modal-body">
-              <h2>Title</h2>
+              <h2>Title <span className="span">*</span></h2>
               <div>
                 <input
                   type="text"
